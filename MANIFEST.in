@@ -1,0 +1,3 @@
+graft harper/templates
+graft harper/static
+include harper/schema.sql

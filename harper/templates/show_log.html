@@ -1,0 +1,17 @@
+{% extends "layout.html" %}
+{% block body %}
+<form action="{{ url_for('add_temperature') }}" method=post class=add-temperature>
+    <dl>
+        <dt>Temperature Sensor Measurement:
+        <dd><input type=number size=30 name=measurement>
+        <dd><input type=submit value=Share>
+    </dl>
+</form>
+    <ul class=temperatures>
+    {% for temperature in temperatures %}
+        <li>{{ temperature.timestamp }}: {{ temperature.measurement|safe }}
+    {% else %}
+        <li><em>Unbelievable.  No entries here so far</em>
+    {% endfor %}
+    </ul>
+{% endblock %}
