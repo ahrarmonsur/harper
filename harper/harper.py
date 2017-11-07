@@ -16,7 +16,7 @@ app = Flask(__name__)
 app.config.from_object(__name__)
 
 app.config.update(dict(
-    DATABASE=os.path.join(app.root_path, 'harper.db'),
+    DATABASE=os.path.join(app.root_path, 'harper.sq3'),
     SECRET_KEY='development key',
     USERNAME='admin',
     PASSWORD='default'
@@ -58,15 +58,21 @@ def initdb_command():
 @app.route('/')
 def show_log():
     db = get_db()
-    cur = db.execute('select measurement, timestamp from temperatures order by id desc')
-    temperatures = cur.fetchall()
-    return render_template('show_log.html', temperatures=temperatures)
+    cur = db.execute('select measurement, timestamp from moisture order by id desc')
+    moistures = cur.fetchall()
+    return render_template('show_log.html', moistures=moistures)
 
-@app.route('/add', methods=['POST'])
-def add_temperature():
-    db = get_db()
-    db.execute('insert into temperatures (measurement, timestamp) values (?, ?)',
-                 [request.form['measurement'], dt.datetime.utcnow()])
-    db.commit()
-    flash('New measurement was successfully posted')
+@app.route('/temperature', methods=['POST'])
+def add_measurement():
+    print(dir(request));
+    print(request.method);
+    if request.form['measurement']:
+        db = get_db()
+        db.execute('insert into moisture (measurement, timestamp) values (?, ?)',
+                     [request.form['measurement'], dt.datetime.utcnow()])
+        db.commit()
+        flash('New measurement was successfully posted')
+    else:
+        flash('Invalid measurement submitted')
+
     return redirect(url_for('show_log'))
