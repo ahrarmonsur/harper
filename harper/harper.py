@@ -62,10 +62,8 @@ def show_log():
     moistures = cur.fetchall()
     return render_template('show_log.html', moistures=moistures)
 
-@app.route('/temperature', methods=['POST'])
+@app.route('/moisture', methods=['POST'])
 def add_measurement():
-    print(dir(request));
-    print(request.method);
     if request.form['measurement']:
         db = get_db()
         db.execute('insert into moisture (measurement, timestamp) values (?, ?)',
