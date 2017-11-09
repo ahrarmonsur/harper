@@ -4,3 +4,5 @@
 *.sq3
 *.db
 *.idea
+*.pyc
+
