@@ -9,15 +9,15 @@
 #include <ESP8266WiFiMulti.h>
 #include <ESP8266HTTPClient.h>
 
-const char* ssid     = "Ahrar987";
-const char* password = "mon987syeda";
+const char* SSID     = "Ahrar987";
+const char* PASSWORD = "mon987syeda";
 
-const char* host = "http://harper.thehumanmachine.link/moisture";
-const char* streamId   = "....................";
-const char* privateKey = "....................";
+const char* HOST = "http://harper.thehumanmachine.link/moisture";
 
 const int SENSOR_POWER = 15;
-int vIn;
+const int TURBO_PIN = 13;
+int moistureValue;
+int turboPressed;
 
 ESP8266WiFiMulti WiFiMulti;
 
@@ -25,6 +25,7 @@ ESP8266WiFiMulti WiFiMulti;
 
 void setup() {
 	pinMode(SENSOR_POWER, OUTPUT);     // Initialize the LED_BUILTIN pin as an output
+	pinMode(TURBO_PIN, INPUT);     // Initialize the LED_BUILTIN pin as an output
 	Serial.begin(115200);
 	delay(10);
 
@@ -32,7 +33,7 @@ void setup() {
     Serial.println();
     Serial.println();
     Serial.print("Connecting to ");
-    Serial.println(ssid);
+    Serial.println(SSID);
 
 	// Countdown to WiFi connection
 	for(uint8_t t = 4; t > 0; t--) {
@@ -43,7 +44,7 @@ void setup() {
 
 	// Set Wifi to station mode
 	WiFi.mode(WIFI_STA);
-	WiFiMulti.addAP(ssid, password);
+	WiFiMulti.addAP(SSID, PASSWORD);
 
 	// Print Wifi connection details
     if(WiFiMulti.run() == WL_CONNECTED) {
@@ -56,37 +57,39 @@ void setup() {
 }
 
 void loop() {
-//	digitalWrite(SENSOR_POWER, LOW);:w
-//	delay(1000);
+	turboPressed = digitalRead(TURBO_PIN);
+	Serial.printf("Button Status: %d\n", turboPressed);
     if(WiFiMulti.run() == WL_CONNECTED) {
 		digitalWrite(SENSOR_POWER, HIGH);  // Turn the LED off by making the voltage HIGH
 		delay(1000);
-		vIn = analogRead(A0);
-		Serial.println(vIn);
-		delay(1000);
+		moistureValue = analogRead(A0);
+		Serial.println(moistureValue);
 		digitalWrite(SENSOR_POWER, LOW);  // Turn the LED off by making the voltage HIGH
-		delay(2000);                      // Wait for two seconds (to demonstrate the active low LED)
 
-		HTTPClient http;
-		Serial.println("[HTTP] begin...");
-		http.begin(host);
-		http.addHeader("Content-Type", "application/x-www-form-urlencoded");
-		String payload = "measurement=";
-		int httpCode = http.POST(payload + vIn);
-		Serial.println(httpCode);
-		Serial.println(payload+vIn);
-		if(httpCode > 0) {
-			Serial.printf("[HTTP] POST... code: %d\n", httpCode);
-			if(httpCode == HTTP_CODE_OK) {
-				String payload = http.getString();
-				Serial.println(payload);
-			}
-		} else {
-			Serial.printf("[HTTP] POST... failed, error: %s\n", http.errorToString(httpCode).c_str());
-		}
-		http.end();
+		String fieldName = "measurement=";
+		String payload = fieldName + moistureValue;
+		sendHTTPPost( payload);
 	} else {
 		Serial.println("Could not connect to Wifi.");
 	}
-	delay(3000);
+	if(turboPressed) {
+		delay(500);
+	} else {
+		delay(3600000);
+	}
+}
+
+void sendHTTPPost(String payload) {
+	HTTPClient http;
+	Serial.println("[HTTP] begin...");
+	http.begin(HOST);
+	http.addHeader("Content-Type", "application/x-www-form-urlencoded");
+	int httpCode = http.POST(payload);
+	Serial.println(payload);
+	if(httpCode > 0) {
+		Serial.printf("[HTTP] POST... code: %d\n", httpCode);
+	} else {
+		Serial.printf("[HTTP] POST... failed, error: %s\n", http.errorToString(httpCode).c_str());
+	}
+	http.end();
 }
