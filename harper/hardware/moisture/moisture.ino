@@ -18,6 +18,10 @@ const int SENSOR_POWER = 15;
 const int TURBO_PIN = 13;
 int moistureValue;
 int turboPressed;
+int permissionToMeasure;
+int cadence = 3600000;					// The number of milliseconds between regular readings
+int turboCadence = 500;					// The number of milliseconds between regular readings with turbo button pressed
+unsigned long msSinceMeasurement;
 
 ESP8266WiFiMulti WiFiMulti;
 
@@ -36,7 +40,7 @@ void setup() {
     Serial.println(SSID);
 
 	// Countdown to WiFi connection
-	for(uint8_t t = 4; t > 0; t--) {
+	for (uint8_t t = 4; t > 0; t--) {
         Serial.printf("[SETUP] WAIT %d...\n", t);
         Serial.flush();
         delay(1000);
@@ -47,35 +51,38 @@ void setup() {
 	WiFiMulti.addAP(SSID, PASSWORD);
 
 	// Print Wifi connection details
-    if(WiFiMulti.run() == WL_CONNECTED) {
+    if (WiFiMulti.run() == WL_CONNECTED) {
 		Serial.println("");
 		Serial.println("WiFi connected");
 		Serial.println("IP address: ");
 		Serial.println(WiFi.localIP());
 	}
+	// Give permission to measure
+	permissionToMeasure = 1;
 
 }
 
 void loop() {
 	turboPressed = digitalRead(TURBO_PIN);
-	Serial.printf("Button Status: %d\n", turboPressed);
-    if(WiFiMulti.run() == WL_CONNECTED) {
-		digitalWrite(SENSOR_POWER, HIGH);  // Turn the LED off by making the voltage HIGH
-		delay(1000);
-		moistureValue = analogRead(A0);
-		Serial.println(moistureValue);
-		digitalWrite(SENSOR_POWER, LOW);  // Turn the LED off by making the voltage HIGH
-
-		String fieldName = "measurement=";
-		String payload = fieldName + moistureValue;
-		sendHTTPPost( payload);
-	} else {
-		Serial.println("Could not connect to Wifi.");
+	if ((millis() - msSinceMeasurement) > (turboPressed ? turboCadence : cadence)) {
+		permissionToMeasure = 1;
 	}
-	if(turboPressed) {
-		delay(500);
-	} else {
-		delay(3600000);
+    if (permissionToMeasure) {
+    	if (WiFiMulti.run() == WL_CONNECTED) {
+			digitalWrite(SENSOR_POWER, HIGH);
+			delay(1000);
+			moistureValue = analogRead(A0);
+			Serial.println(moistureValue);
+			digitalWrite(SENSOR_POWER, LOW);
+
+			String fieldName = "measurement=";
+			String payload = fieldName + moistureValue;
+			sendHTTPPost( payload);
+			permissionToMeasure = 0;
+			msSinceMeasurement = millis();
+		} else {
+			Serial.println("Could not connect to Wifi.");
+		}
 	}
 }
 
@@ -86,7 +93,7 @@ void sendHTTPPost(String payload) {
 	http.addHeader("Content-Type", "application/x-www-form-urlencoded");
 	int httpCode = http.POST(payload);
 	Serial.println(payload);
-	if(httpCode > 0) {
+	if (httpCode > 0) {
 		Serial.printf("[HTTP] POST... code: %d\n", httpCode);
 	} else {
 		Serial.printf("[HTTP] POST... failed, error: %s\n", http.errorToString(httpCode).c_str());
