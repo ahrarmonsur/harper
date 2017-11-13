@@ -1,0 +1,17 @@
+{
+    "name": "harper",
+    "version": "1.0.0",
+    "description": "Project H.A.R.P.E.R: A webserver for receiving and manipulating sensors and data used in home automation.",
+    "main": "index.js",
+    "scripts": {
+        "build": "webpack -p --progress --config webpack.config.js",
+        "dev-build": "webpack --progress -d --config webpack.config.js",
+        "test": "echo \"Error: no test specified\" && exit 1",
+        "watch": "webpack --progress -d --config webpack.config.js --watch"
+    },
+    "author": "Ahrar Monsur",
+    "license": "ISC",
+    "devDependencies": {
+        "webpack": "^3.8.1"
+    }
+}

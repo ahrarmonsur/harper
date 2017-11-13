@@ -1,0 +1,17 @@
+extends layout.pug
+
+block content
+    form.add-measurement(action="{{ url_for('add_measurement') }}", method="post")
+        dl
+            dt Moisture Sensor Measurement:
+            dd
+                input(type="number", size="30", name="measurement")
+            dd
+                input(type="submit", value="Share")
+    ul.measurement
+        if moistures
+            each moisture in moistures
+                li {{ moisture.timestamp }} : {{ moisture.measurement }}
+        else
+            li
+                em Unbelievable. No entries here so far

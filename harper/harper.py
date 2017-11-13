@@ -22,6 +22,9 @@ app.config.update(dict(
     PASSWORD='default'
 ))
 app.config.from_envvar('HARPER_SETTINGS', silent=True)
+app.jinja_env.add_extension('pypugjs.ext.jinja.PyPugJSExtension')
+
+
 
 def connect_db():
     """Connects to the specific database."""
@@ -60,7 +63,7 @@ def show_log():
     db = get_db()
     cur = db.execute('select measurement, timestamp from moisture order by id desc')
     moistures = cur.fetchall()
-    return render_template('show_log.html', moistures=moistures)
+    return render_template('show_log.pug', moistures=moistures)
 
 @app.route('/moisture', methods=['POST'])
 def add_measurement():
