@@ -1,13 +1,16 @@
 extends layout.pug
 
 block content
-    form.add-measurement(action="{{ url_for('add_measurement') }}", method="post")
+    //form.add-measurement(action="{{ url_for('add_measurement') }}", method="post")
         dl
             dt Moisture Sensor Measurement:
             dd
                 input(type="number", size="30", name="measurement")
             dd
                 input(type="submit", value="Share")
+    #moistureGraph
+
+    h2 Raw Data
     ul.measurement
         if moistures
             each moisture in moistures

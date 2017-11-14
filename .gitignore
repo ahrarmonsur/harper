@@ -2,8 +2,10 @@
 *.egg-info
 *.swp
 *.sq3
+*.sql
 *.db
 *.idea
 *.pyc
 
 node_modules/
+dist/

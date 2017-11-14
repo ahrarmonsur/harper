@@ -2,7 +2,7 @@ const webpack = require("webpack");
 const ExtractTextPlugin = require("extract-text-webpack-plugin");
 
 const config = {
-    entry:  __dirname + "/js/index.js",
+    entry:  __dirname + "/js/index.es6",
     output: {
         path: __dirname + "/dist",
         filename: "bundle.js",
