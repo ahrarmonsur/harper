@@ -1,6 +1,7 @@
 import os
 import sqlite3
 import datetime as dt
+import pytz
 from flask import (
         Flask,
         request,
@@ -10,6 +11,7 @@ from flask import (
         abort,
         render_template,
         flash,
+        jsonify,
     )
 
 app = Flask(__name__)
@@ -19,13 +21,26 @@ app.config.update(dict(
     DATABASE=os.path.join(app.root_path, 'harper.sq3'),
     SECRET_KEY='development key',
     USERNAME='admin',
-    PASSWORD='default'
+    PASSWORD='default',
+    TIMEZONE='Canada/Eastern'
 ))
 app.config.from_envvar('HARPER_SETTINGS', silent=True)
+app.jinja_env.add_extension('pypugjs.ext.jinja.PyPugJSExtension')
+
+def localize_datetime(naive_dt):
+    eastern = pytz.timezone(app.config['TIMEZONE'])
+    aware_dt = pytz.utc.localize(naive_dt)
+    local_dt = aware_dt.astimezone(eastern)
+    return local_dt
+
+def datetime_to_epoch(input_dt):
+    epoch = dt.datetime.utcfromtimestamp(0)
+    delta = input_dt - epoch
+    return int(delta.total_seconds()*1000)
 
 def connect_db():
     """Connects to the specific database."""
-    rv = sqlite3.connect(app.config['DATABASE'])
+    rv = sqlite3.connect(app.config['DATABASE'], detect_types=sqlite3.PARSE_COLNAMES)
     rv.row_factory = sqlite3.Row
     return rv
 
@@ -60,7 +75,26 @@ def show_log():
     db = get_db()
     cur = db.execute('select measurement, timestamp from moisture order by id desc')
     moistures = cur.fetchall()
-    return render_template('show_log.html', moistures=moistures)
+    return render_template('show_log.pug', moistures=moistures)
+
+@app.route('/moisture', methods=['GET'])
+def get_moisture():
+    def convert_to_local_timestamp(dt):
+        pass
+    db = get_db()
+    cur = db.execute('select timestamp as "ts [timestamp]", measurement from moisture order by id asc')
+    moistures = cur.fetchall()
+    def formatData(row):
+        timestamp = datetime_to_epoch(row[0])
+        # The sensor reading is a measure of now dry the soil is
+        # As such, you take the complement of this value to get the moisture analog
+        # The complement is achieved by subtracting the value from 1024 (the maximum raeding from the 10 bit analog input on the MCU
+        moisture = 1024 - row[1]
+        return [timestamp, moisture]
+
+    response = jsonify(map(formatData, moistures))
+    return response
+
 
 @app.route('/moisture', methods=['POST'])
 def add_measurement():

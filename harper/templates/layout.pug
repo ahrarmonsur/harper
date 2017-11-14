@@ -1,0 +1,19 @@
+!!! 5
+html(lang="en")
+head
+    title Project HARPER
+    link(rel="stylesheet", href="{{ url_for('static', filename='dist/style.css') }}")
+    script(src="https://code.jquery.com/jquery-3.2.1.min.js", integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=", crossorigin="anonymous")
+    script(src="https://code.highcharts.com/highcharts.js")
+    script(src="https://momentjs.com/downloads/moment-with-locales.js")
+    script(src="https://momentjs.com/downloads/moment-timezone-with-data.js")
+    script(src="{{ url_for('static', filename='dist/bundle.js') }}")
+
+body
+    .page
+        h1 Project H.A.R.P.E.R
+        each message in get_flashed_messages()
+            .flash {{ message }}
+        block content
+
+

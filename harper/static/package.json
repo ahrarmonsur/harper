@@ -1,0 +1,32 @@
+{
+    "name": "harper",
+    "version": "1.0.0",
+    "description": "Project H.A.R.P.E.R: A webserver for receiving and manipulating sensors and data used in home automation.",
+    "main": "index.js",
+    "scripts": {
+        "build": "webpack -p --progress --config webpack.config.js",
+        "dev-build": "webpack --progress -d --config webpack.config.js",
+        "test": "echo \"Error: no test specified\" && exit 1",
+        "watch": "webpack --progress -d --config webpack.config.js --watch"
+    },
+    "author": "Ahrar Monsur",
+    "license": "ISC",
+    "devDependencies": {
+        "babel-core": "^6.26.0",
+        "babel-loader": "^7.1.2",
+        "babel-preset-es2015": "^6.24.1",
+        "css-loader": "^0.28.7",
+        "extract-text-webpack-plugin": "^3.0.2",
+        "jshint": "^2.9.5",
+        "jshint-loader": "^0.8.4",
+        "node-libs-browser": "^2.0.0",
+        "node-sass": "^4.6.1",
+        "sass-loader": "^6.0.6",
+        "style-loader": "^0.19.0",
+        "webpack": "^3.8.1",
+        "webpack-dev-server": "^2.9.4"
+    },
+    "dependencies": {
+        "jquery": "^3.2.1"
+    }
+}
