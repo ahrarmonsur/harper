@@ -9,3 +9,8 @@
 
 node_modules/
 dist/
+settings/local.py
+
+# Secret Files
+secrets.py
+secrets.h

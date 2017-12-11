@@ -8,9 +8,7 @@
 #include <ESP8266WiFi.h>
 #include <ESP8266WiFiMulti.h>
 #include <ESP8266HTTPClient.h>
-
-const char* SSID     = "Ahrar987";
-const char* PASSWORD = "mon987syeda";
+#include "secrets.h"
 
 const char* HOST = "http://harper.thehumanmachine.link/moisture";
 
@@ -47,7 +45,7 @@ void setup() {
     Serial.println();
     Serial.println();
     Serial.print("Connecting to ");
-    Serial.println(SSID);
+    Serial.println(ROUTER_SSID);
 
 	// Countdown to WiFi connection
 	for (uint8_t t = 4; t > 0; t--) {
@@ -58,7 +56,7 @@ void setup() {
 
 	// Set Wifi to station mode
 	WiFi.mode(WIFI_STA);
-	WiFiMulti.addAP(SSID, PASSWORD);
+	WiFiMulti.addAP(ROUTER_SSID, ROUTER_PASSWORD);
 
 	// Print Wifi connection details
     if (WiFiMulti.run() == WL_CONNECTED) {
