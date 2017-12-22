@@ -8,6 +8,7 @@
 *.pyc
 
 node_modules/
-dist/
 secrets.py
+dist/
+backup/
 settings/local.py
