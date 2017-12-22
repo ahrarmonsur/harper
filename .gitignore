@@ -1,6 +1,7 @@
 .DS_STORE
 *.egg-info
 *.swp
+*.swo
 *.sq3
 *.sql
 *.db
