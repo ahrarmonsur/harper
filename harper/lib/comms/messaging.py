@@ -39,7 +39,7 @@ class MessageClient(object):
         )
 
 
-def test_messaging(message):
+def broadcast_message(message):
     contacts = load_contacts()
     client = MessageClient()
 

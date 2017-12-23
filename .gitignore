@@ -1,6 +1,7 @@
 .DS_STORE
 *.egg-info
 *.swp
+*.swo
 *.sq3
 *.sql
 *.db
@@ -8,6 +9,7 @@
 *.pyc
 
 node_modules/
-dist/
 secrets.py
+dist/
+backup/
 settings/local.py
