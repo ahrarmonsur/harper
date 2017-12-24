@@ -10,15 +10,21 @@
 #include <ESP8266HTTPClient.h>
 #include "secrets.h"
 
-const char* HOST = "http://harper.thehumanmachine.link/moisture";
-
+const String SERVER_ADDRESS = "http://harper.thehumanmachine.link";
+const int RELAY_PIN = 12;
 const int SENSOR_POWER = 15;
 const int TURBO_PIN = 13;
+
+const bool UPLOAD_DATA = true;
 int moistureValue;
 int turboPressed;
 int permissionToMeasure;
-int cadence = 3600000;					// The number of milliseconds between regular readings
-int turboCadence = 500;					// The number of milliseconds between regular readings with turbo button pressed
+
+int aridityThreshold = 900;			// The value from the sensor, above which the watering routine will be triggered
+int cadence = 3600000;				// The number of milliseconds between regular readings
+//int cadence = 5000;					// The number of milliseconds between regular readings
+int turboCadence = 500;				// The number of milliseconds between regular readings with turbo button pressed
+int wateringDuration = 4000;
 unsigned long msSinceMeasurement;
 
 ESP8266WiFiMulti WiFiMulti;
@@ -26,10 +32,13 @@ ESP8266WiFiMulti WiFiMulti;
 
 
 void setup() {
-	pinMode(SENSOR_POWER, OUTPUT);     // Initialize the LED_BUILTIN pin as an output
-	pinMode(TURBO_PIN, INPUT);     // Initialize the LED_BUILTIN pin as an output
+	pinMode(SENSOR_POWER, OUTPUT);
+	pinMode(TURBO_PIN, INPUT);
+	pinMode(RELAY_PIN, OUTPUT);
 	Serial.begin(115200);
 	delay(10);
+
+	setRelayState(0);
 
 	// Connect to WiFi network
     Serial.println();
@@ -54,6 +63,8 @@ void setup() {
 		Serial.println("WiFi connected");
 		Serial.println("IP address: ");
 		Serial.println(WiFi.localIP());
+	} else {
+		Serial.println("CONNECTION FAILED");
 	}
 	// Give permission to measure
 	permissionToMeasure = 1;
@@ -66,28 +77,68 @@ void loop() {
 		permissionToMeasure = 1;
 	}
     if (permissionToMeasure) {
-    	if (WiFiMulti.run() == WL_CONNECTED) {
-			digitalWrite(SENSOR_POWER, HIGH);
-			delay(1000);
-			moistureValue = analogRead(A0);
-			Serial.println(moistureValue);
-			digitalWrite(SENSOR_POWER, LOW);
+    	moistureValue = readSensor();
+		permissionToMeasure = 0;
+		msSinceMeasurement = millis();
 
-			String fieldName = "measurement=";
-			String payload = fieldName + moistureValue;
-			sendHTTPPost( payload);
-			permissionToMeasure = 0;
-			msSinceMeasurement = millis();
-		} else {
-			Serial.println("Could not connect to Wifi.");
+    	if (UPLOAD_DATA) {
+    		if (WiFiMulti.run() == WL_CONNECTED) {
+				String fieldName = "measurement=";
+				String payload = fieldName + moistureValue;
+				String url = SERVER_ADDRESS + "/moisture";
+				sendPostRequest(url, payload);
+			} else {
+				Serial.println("Attempting to reconnect to Wifi...");
+				WiFiMulti.addAP(ROUTER_SSID, ROUTER_PASSWORD);
+			}
+		}
+
+		if (moistureValue >= aridityThreshold) {
+			waterPlant();
 		}
 	}
 }
 
-void sendHTTPPost(String payload) {
+int readSensor() {
+	int measurement;
+
+	digitalWrite(SENSOR_POWER, HIGH);			// Supply power to sensor
+	delay(500);									// Wait for circuit to energize
+	measurement = analogRead(A0);				// Read the measurement from the sensor
+	Serial.println(measurement);
+	digitalWrite(SENSOR_POWER, LOW);			// Turn off power to the sensor; this reduces the effects of corrosion
+	delay(500);									// Wait for circuit to energize
+	return measurement;
+}
+
+void setRelayState(int relayOn) {
+	// The relay is active low
+	if (relayOn) {
+		digitalWrite(RELAY_PIN, LOW);
+	} else {
+		digitalWrite(RELAY_PIN, HIGH);
+	}
+}
+
+void waterPlant() {
+	unsigned long msBegin, duration;
+
+	msBegin = millis();
+	setRelayState(1);
+	delay(wateringDuration);
+	setRelayState(0);
+	duration = millis() - msBegin;
+
+	String payload = "plantName=Paddles&type=submersiblePump_120lph&duration=";
+	payload = payload + duration;
+	String url = SERVER_ADDRESS + "/moisture/irrigation";
+	sendPostRequest(url, payload);
+}
+
+void sendPostRequest(String url, String payload) {
 	HTTPClient http;
 	Serial.println("[HTTP] begin...");
-	http.begin(HOST);
+	http.begin(url);
 	http.addHeader("Content-Type", "application/x-www-form-urlencoded");
 	int httpCode = http.POST(payload);
 	Serial.println(payload);
