@@ -28,6 +28,13 @@ from lib.utils import global_vars as gvars
 
 app = Flask(__name__)
 app.config.from_object(__name__)
+
+app.config.update(dict(
+    SECRET_KEY='development key',
+    USERNAME='admin',
+    PASSWORD='password'
+))
+
 app.config.from_envvar('HARPER_SETTINGS', silent=True)
 app.jinja_env.add_extension('pypugjs.ext.jinja.PyPugJSExtension')
 
@@ -72,6 +79,7 @@ def record_irrigation():
     date = request.form.get('datetime', None)
     record = {
         'type': request.form.get('type', None),
+        'plantName': request.form.get('plantName', None),
         'datetime': dtparser.parse(date) if date else dth.utcnow(),
         'duration': request.form.get('duration', None)
     }
@@ -80,7 +88,8 @@ def record_irrigation():
     db_record = db.find_one('irrigation', {'_id': entry_id})
 
     # Broadcast a message to contact list
-    message = "Paddles sipped some water{} on {}".format(
+    message = "{} sipped some water{} on {}".format(
+        record['plantName'] or "Your Plant",
         (" for {} milliseconds".format(record['duration']) if record['duration'] else ""),
         dth.prettify_datetime(record['datetime'], gvars.HUMANIZED_DT_FORMAT)
     )

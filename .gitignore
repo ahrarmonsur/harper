@@ -11,6 +11,7 @@
 node_modules/
 secrets.py
 dist/
+dump/
 backup/
 settings/local.py
 
