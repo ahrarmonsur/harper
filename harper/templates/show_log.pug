@@ -14,7 +14,7 @@ block content
     ul.measurement
         if moistures
             each moisture in moistures
-                li {{ moisture.timestamp }} : {{ moisture.measurement }}
+                li {{ moisture.datetime }} : {{ moisture.measurement }}
         else
             li
                 em Unbelievable. No entries here so far
