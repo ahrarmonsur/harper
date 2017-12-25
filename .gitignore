@@ -14,3 +14,7 @@ dist/
 dump/
 backup/
 settings/local.py
+
+# Secret Files
+secrets.py
+secrets.h
