@@ -22,7 +22,9 @@ $(function () {
         var moistureChart = Highcharts.chart("moistureGraph", {
             chart: {
                 type: "line",
-                zoomType: "x"
+                zoomType: "x",
+                panning: true,
+                panKey: "shift"
             },
             title: {
                 text: "Planter Moisture Content"
