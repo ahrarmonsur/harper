@@ -24,7 +24,17 @@ $(function () {
                 type: "line",
                 zoomType: "x",
                 panning: true,
-                panKey: "shift"
+                panKey: "shift",
+                events: {
+                    load: function() {
+                        console.log(this);
+                        this.xAxis[0].setExtremes(
+                            moment().subtract(7, 'days').valueOf(),
+                            moment().valueOf()
+                        );
+                    }
+                }
+
             },
             title: {
                 text: "Planter Moisture Content"
