@@ -29,7 +29,7 @@ $(function () {
                     load: function() {
                         console.log(this);
                         this.xAxis[0].setExtremes(
-                            moment().subtract(14, 'days').valueOf(),
+                            moment().subtract(21, 'days').valueOf(),
                             moment().valueOf()
                         );
                     }
