@@ -7,6 +7,7 @@
 *.db
 *.idea
 *.pyc
+*.log
 
 node_modules/
 secrets.py
