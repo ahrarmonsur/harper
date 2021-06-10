@@ -4,7 +4,7 @@ cffi==1.11.2
 chardet==3.0.4
 click==6.7
 cryptography==2.1.4
-Django==1.9.5
+Django==2.2.24
 enum34==1.1.6
 Flask==0.12.2
 -e git+git@github.com:ahrarmonsur/harper.git@21539513a00e41b6802efec299831174fd97f9b8#egg=harper
